@@ -6,6 +6,7 @@ from sensor_msgs.msg import CompressedImage
 from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
 
+
 def draw_timestamps(folder, name_in, name_out, img_topic):
     bag_in = rosbag.Bag(folder + name_in)
     bridge = CvBridge()
@@ -21,10 +22,14 @@ def draw_timestamps(folder, name_in, name_out, img_topic):
 
         bag_in.close()
 
+
 def modify_img(img, timestamp):
     org = (5, 20)
+    font_scale = 0.5
+    color = (0, 255, 0)
+    thickness = 1
     cv2.putText(img, str(timestamp), org, cv2.FONT_HERSHEY_SIMPLEX, 
-                0.5, (0, 255, 0), 1, cv2.LINE_AA)
+                font_scale, color, thickness, cv2.LINE_AA)
     return img
 
 
