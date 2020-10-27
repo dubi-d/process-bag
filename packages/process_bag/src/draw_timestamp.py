@@ -12,15 +12,20 @@ def draw_timestamps(folder, name_in, name_out, img_topic):
 
     with rosbag.Bag(folder + name_out, "w") as bag_out:
         for topic, msg, t in bag_in.read_messages(topics=img_topic):
-            cv_img = bridge.compressed_imgmsg_to_cv2(msg, desired_encoding="mono8")
-            cv_img_out = modify_img(cv_img)
+            cv_img = bridge.compressed_imgmsg_to_cv2(msg)
+            cv_img_out = modify_img(cv_img, msg.header.stamp)
             img_out = bridge.cv2_to_compressed_imgmsg(cv_img_out)
-            bag_out.write(topic, img_out)
+            img_out.header = msg.header
+            img_out.format = msg.format
+            bag_out.write(topic, img_out, t)
 
         bag_in.close()
 
-def modify_img(img_in):
-    return img_in
+def modify_img(img, timestamp):
+    org = (5, 20)
+    cv2.putText(img, str(timestamp), org, cv2.FONT_HERSHEY_SIMPLEX, 
+                0.5, (0, 255, 0), 1, cv2.LINE_AA)
+    return img
 
 
 # Config
@@ -30,11 +35,6 @@ bag_name_out = "amod20-rh3-ex-process-David_Dubach.bag"
 img_topic = "/diodak/camera_node/image/compressed"
 
 if __name__ == "__main__":
+    print("Proccessing " + bag_name)
     draw_timestamps(bag_folder, bag_name, bag_name_out, img_topic)
-
-
-#np_img = np.fromstring(msg.data, np.uint8)
-#cv_img = cv2.imdecode(np_img, cv2.CV_LOAD_IMAGE_COLOR)
-#cv_img_out = modify_img(cv_img)
-#img_out = bridge.cv2_to_imgmsg(cv_img_out)
-#bag_out.write(topic, img_out)
+    print("Finished! New bagfile: " + bag_name_out)
